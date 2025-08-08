@@ -1,181 +1,107 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sorting Visualization</title>
-    <style>
-      /* Global page style */
-body {
-    background-color: #0a0a0a;
-    color: #0ff;
-    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    text-align: center;
-    margin: 0;
-    padding: 0;
-}
-
-/* Main heading glow */
-h1 {
-    font-size: 3rem;
-    text-shadow: 0 0 15px #0ff, 0 0 25px #0ff;
-    margin-top: 20px;
-}
-
-/* Subheading */
-h2 {
-    font-size: 1.5rem;
-    margin-bottom: 10px;
-    text-shadow: 0 0 10px #0ff;
-}
-
-/* Buttons general style */
-button, input[type="button"] {
-    font-size: 18px;
-    padding: 10px 20px;
-    border-radius: 8px;
-    border: 2px solid #0ff;
-    background-color: transparent;
-    color: #0ff;
-    margin: 10px;
-    cursor: pointer;
-    position: relative;
-    overflow: hidden;
-    transition: all 0.3s ease;
-}
-
-/* Neon hover glow */
-button:hover, input[type="button"]:hover {
-    box-shadow: 0 0 15px #0ff, 0 0 30px #0ff;
-    transform: scale(1.05);
-}
-
-/* Button ripple animation */
-button::after, input[type="button"]::after {
-    content: "";
-    position: absolute;
-    top: 0;
-    left: 0;
-    width: 100%;
-    height: 100%;
-    background: radial-gradient(circle, rgba(0, 255, 255, 0.3), rgba(0, 255, 255, 0) 70%);
-    transform: scale(0);
-    transition: transform 0.5s ease;
-}
-
-button:hover::after, input[type="button"]:hover::after {
-    transform: scale(1);
-}
-
-/* Graph container */
-.bar-graph {
-    display: flex;
-    justify-content: center;
-    align-items: flex-end;
-    height: 500px;
-    background: linear-gradient(to top, rgba(0,255,255,0.05), rgba(0,255,255,0));
-    border: 2px solid #0ff;
-    border-radius: 10px;
-    margin: 30px auto;
-    width: 90%;
-    box-shadow: 0 0 15px #0ff;
-}
-
-/* Bars style */
-.bar {
-    width: 30px;
-    margin: 0 4px;
-    background: linear-gradient(180deg, #00ffff, #0066ff);
-    border-radius: 5px 5px 0 0;
-    box-shadow: 0 0 10px #0ff;
-    transition: height 0.4s ease, background 0.3s ease;
-}
-
-/* Highlighted bars (optional when swapping) */
-.bar.active {
-    background: linear-gradient(180deg, #ff00ff, #ff0066);
-    box-shadow: 0 0 15px #ff00ff;
-}
-
-/* Notes section */
-p {
-    color: #ccc;
-    font-size: 1rem;
-    line-height: 1.4;
-}
-
-/* Hide notes */
-.hidden {
-    display: none;
-}
-
-/* Image under sorting algorithm description */
-#num img {
-    margin-top: 20px;
-    border-radius: 10px;
-    border: 2px solid #0ff;
-    box-shadow: 0 0 15px #0ff;
-}
-
-/* Divider styling */
-hr {
-    border: none;
-    height: 2px;
-    background: linear-gradient(to right, transparent, #0ff, transparent);
-    margin: 20px auto;
-    width: 80%;
-}
-
-    </style>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Sorting Visualizer — Interactive</title>
+  <style>
+    :root{
+      --bg:#071018; --panel:#0b1b26; --accent:#00d2ff; --accent-2:#7b61ff; --muted:#9fb6c6;
+      --bar-bg:linear-gradient(180deg,#00d2ff,#0066ff);
+      --bar-width:calc((100% - 40px) / var(--n,20));
+    }
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Inter,system-ui,Segoe UI,Helvetica,Arial;background:var(--bg);color:#e6fbff}
+    header{display:flex;align-items:center;gap:16px;padding:18px 20px;border-bottom:1px solid rgba(255,255,255,0.03)}
+    h1{font-size:1.2rem;margin:0;color:var(--accent)}
+    .container{display:flex;gap:20px;padding:18px;max-width:1200px;margin:18px auto}
+    .left, .right{background:var(--panel);border-radius:10px;padding:16px;box-shadow:0 6px 20px rgba(0,0,0,0.6)}
+    .left{flex:1;display:flex;flex-direction:column;gap:12px}
+    .controls{display:flex;flex-wrap:wrap;gap:10px;align-items:center}
+    .controls > *{background:transparent;border:1px solid rgba(255,255,255,0.06);padding:8px;border-radius:8px;color:var(--muted)}
+    select, input[type=range], input[type=number]{appearance:none}
+    label{font-size:0.85rem;color:var(--muted)}
+    .bar-graph{height:420px;border-radius:8px;border:1px solid rgba(255,255,255,0.03);display:flex;align-items:flex-end;gap:6px;padding:20px;overflow:hidden;background:linear-gradient(180deg,rgba(255,255,255,0.01),transparent)}
+    .bar{flex:1 0 auto;border-radius:6px 6px 3px 3px;background:var(--bar-bg);display:flex;align-items:flex-end;justify-content:center;position:relative;transition:height 200ms ease,transform 120ms ease,background 120ms ease;box-shadow:0 6px 18px rgba(0,0,0,0.6)}
+    .bar > span{font-size:11px;color:rgba(255,255,255,0.85);padding:4px;transform:translateY(6px);}
+    .bar.comparing{background:linear-gradient(180deg,#ffd166,#ff7b7b);transform:translateY(-6px)}
+    .bar.swapping{background:linear-gradient(180deg,#7bffb2,#00d2a8)}
+    .small{font-size:0.85rem;color:var(--muted)}
+    .right{width:360px;display:flex;flex-direction:column;gap:12px}
+    .btn{background:linear-gradient(90deg,var(--accent),var(--accent-2));border:none;color:#001;padding:10px 14px;border-radius:10px;cursor:pointer;font-weight:600}
+    .ghost{background:transparent;border:1px solid rgba(255,255,255,0.06);color:var(--muted)}
+    .row{display:flex;gap:8px;align-items:center}
+    .stats{display:flex;gap:8px;flex-wrap:wrap}
+    pre{background:#04131a;padding:12px;border-radius:8px;color:#bfefff;overflow:auto;font-size:13px}
+    footer{padding:12px;text-align:center;color:rgba(255,255,255,0.35);font-size:13px}
+    @media (max-width:900px){.container{flex-direction:column;padding:12px}.right{width:100%}}
+  </style>
 </head>
 <body>
-    <h1 id="sv" style="color: #0ff;">Sorting Visualization</h1>
-    <hr />
-    <h2 style="color: #0ff; padding-right: 30px;">4 Types of Sorting:</h2>
+  <header>
+    <h1>Sorting Visualizer</h1>
+    <div style="margin-left:auto;color:var(--muted);font-size:0.95rem">Interactive • Animations • Explanations</div>
+  </header>
 
-    <hr />
-    <label for="user">Array size:</label>
-    <div>
-        <input class="btn" id="ref" type="button" value="SIZE-REFRESH">
-    </div>
-    <div class="bar-graph" id="barGraph"></div>
-    <hr />
-    <div>
-        <button class="btn" id="bs">Bubble Sort</button>
-        
-  
-        <button class="btn" id="ss">Selection Sort</button>
-        <button class="btn" id="is">Insertion Sort </button>
-        <button class="btn" id="qs">Quick Sort</button>
+  <div class="container">
+    <section class="left">
+      <div class="controls">
+        <label class="small">Algorithm</label>
+        <select id="algorithm" aria-label="choose algorithm">
+          <option value="bubble">Bubble Sort</option>
+          <option value="selection">Selection Sort</option>
+          <option value="insertion">Insertion Sort</option>
+          <option value="merge">Merge Sort</option>
+          <option value="quick">Quick Sort</option>
+        </select>
 
-        <button class="btn" id="ms">Merge Sort</button>
-        <p id="qs-p" class="hidden" style="color: white;">NOTES:<BR>->Time Complexity<br>* Best Case : Ω (N log (N))<br>* Average Case: θ ( N log (N))<br>* Worst Case: O(N ^ 2)<br>->Auxiliary Space: O(1)</p>
-        <p id="ss-p" class="hidden" style="color: white;">NOTES:<BR>->Time Complexity:O(N^2)<br>-> Auxiliary Space: O(1)</p>
-        <p id="is-p" class="hidden" style="color: white;">NOTES:<BR>->Time Complexity: O(N^2)<br>-> Auxiliary Space: O(1)</p>
+        <label class="small">Size</label>
+        <input id="size" type="number" min="5" max="120" value="20" style="width:76px;padding:8px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);"> 
 
-        <p id="bs-p" class="hidden" style="color: white;">NOTES:<BR>->Time Complexity:O(N^2)<br>->Auxiliary Space: O(1)</p>
-        <p id="ms-p" class="hidden" style="color: white;">NOTES:<BR>->Time Complexity: θ ( N log (N))<br>->Auxiliary Space: O(1)</p>
-    </div>
-    <div class="sps"><p id="num"></p></div>
-    <script src="first.js"></script>
-    <script>
-        function setupButton(buttonId, paragraphId) {
-            document.getElementById(buttonId).addEventListener('click', function() {
-                
-                const paragraphs = document.querySelectorAll('p[id$="-p"], p[id^="hp"]');
-                paragraphs.forEach(p => p.classList.add('hidden'));
+        <label class="small">Speed</label>
+        <input id="speed" type="range" min="1" max="100" value="45" style="width:170px">
 
-                var paragraph = document.getElementById(paragraphId);
-                paragraph.classList.remove('hidden');
-            });
-        }
+        <button id="randomize" class="ghost">Randomize</button>
+        <button id="start" class="btn">Start</button>
+        <button id="pause" class="ghost">Pause</button>
+        <button id="step" class="ghost">Step</button>
+      </div>
 
-        setupButton('bs', 'bs-p');
-        setupButton('ss', 'ss-p');
-        setupButton('is', 'is-p');
-        setupButton('qs', 'qs-p');
-        setupButton('ms', 'ms-p');
-    </script>
+      <div class="bar-graph" id="bars" role="img" aria-label="array visualization" tabindex="0"></div>
+
+      <div style="display:flex;gap:12px;align-items:center;justify-content:space-between;margin-top:10px">
+        <div class="stats small">
+          <div id="comparisons">Comparisons: 0</div>
+          <div id="swaps">Swaps: 0</div>
+        </div>
+        <div class="small" id="status">Idle</div>
+      </div>
+
+      <details style="margin-top:12px;background:#04131a;padding:12px;border-radius:8px;border:1px solid rgba(255,255,255,0.03)">
+        <summary style="cursor:pointer;color:var(--muted)">Algorithm description & complexity</summary>
+        <div id="explain" style="margin-top:8px;color:var(--muted);font-size:0.95rem"></div>
+      </details>
+    </section>
+
+    <aside class="right">
+      <div style="display:flex;flex-direction:column;gap:8px">
+        <div class="row"><label class="small">Array data (editable)</label></div>
+        <textarea id="arrayInput" rows="6" style="width:100%;padding:8px;border-radius:8px;background:#04131a;border:1px solid rgba(255,255,255,0.03);color:#dff">Generate numbers separated by commas (e.g. 5,2,8,1)</textarea>
+        <div style="display:flex;gap:8px">
+          <button id="fromInput" class="ghost">Load array</button>
+          <button id="saveImage" class="ghost">Export PNG</button>
+        </div>
+      </div>
+
+      <div>
+        <div class="small" style="margin-bottom:6px">Pseudo / Code</div>
+        <pre id="code" style="height:220px">Select an algorithm to view pseudo-code...</pre>
+      </div>
+    </aside>
+  </div>
+
+  <footer>Open this file in your browser. Change size, speed, algorithm and press Start. Built with plain HTML/CSS/JS.</footer>
+
+ 
 </body>
 </html>
-
